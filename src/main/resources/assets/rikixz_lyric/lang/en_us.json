@@ -1,0 +1,16 @@
+{
+	"key.category.realtimelyrics.lyrics": "Rikixz Lyric",
+	"key.category.rikixz_lyric.lyrics": "Rikixz Lyric",
+	"key.realtimelyrics.toggle": "Show / hide lyrics",
+	"key.realtimelyrics.earlier": "Lyrics sooner (+200 ms)",
+	"key.realtimelyrics.later": "Lyrics later (-200 ms)",
+	"key.realtimelyrics.restart": "Song just started (reset timing)",
+	"key.realtimelyrics.settings": "Open lyrics settings",
+	"key.realtimelyrics.hud_position": "Open HUD drag & position menu",
+	"key.rikixz_lyric.toggle": "Show / hide lyrics",
+	"key.rikixz_lyric.earlier": "Lyrics sooner (+200 ms)",
+	"key.rikixz_lyric.later": "Lyrics later (-200 ms)",
+	"key.rikixz_lyric.restart": "Song just started (reset timing)",
+	"key.rikixz_lyric.settings": "Open lyrics settings",
+	"key.rikixz_lyric.hud_position": "Open HUD drag & position menu"
+}
