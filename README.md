@@ -44,7 +44,7 @@ Supports **Spotify, YouTube, Firefox, Chrome, VLC**, and other MPRIS/Windows med
 | <kbd>K</kbd> | **Toggle in-world lyrics visibility** ON / OFF |
 | <kbd>[</kbd> | Nudge lyrics 0.1s sooner |
 | <kbd>]</kbd> | Nudge lyrics 0.1s later |
-| <kbd>\</kbd> | Reset song playback timer |
+| <kbd>\\</kbd> | Reset song playback timer |
 | **Mod Menu** | Open full visual configuration dashboard |
 
 ---
