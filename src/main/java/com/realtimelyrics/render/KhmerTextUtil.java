@@ -60,13 +60,16 @@ public final class KhmerTextUtil {
          return text;
       }
       try {
-         java.text.Normalizer.Form form = java.text.Normalizer.Form.NFC;
-         if (java.text.Normalizer.isNormalized(text, form)) {
+         // Try ICU4J normalization first
+         String normalized = com.ibm.icu.text.Normalizer2.getNFCInstance().normalize(text);
+         return normalized;
+      } catch (Throwable t) {
+         try {
+            java.text.Normalizer.Form form = java.text.Normalizer.Form.NFC;
+            return java.text.Normalizer.isNormalized(text, form) ? text : java.text.Normalizer.normalize(text, form);
+         } catch (Throwable t2) {
             return text;
          }
-         return java.text.Normalizer.normalize(text, form);
-      } catch (Throwable t) {
-         return text;
       }
    }
 
