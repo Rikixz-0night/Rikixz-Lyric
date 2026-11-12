@@ -9,10 +9,32 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
+import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public final class KhmerTextUtil {
+   public static final Identifier KHMER_FONT = Identifier.fromNamespaceAndPath("rikixz_lyric", "khmer");
+   public static Style khmerStyle() {
+      try {
+         return Style.EMPTY.withFont(KHMER_FONT);
+      } catch (Throwable t) {
+         return Style.EMPTY;
+      }
+   }
+   public static Component khmerComponent(String text) {
+      if (text == null) return Component.empty();
+      String shaped = shape(text);
+      Component c = Component.literal(shaped);
+      if (containsKhmer(text)) {
+         try {
+            c = c.withStyle(khmerStyle());
+         } catch (Throwable ignored) {}
+      }
+      return c;
+   }
    private static final Logger LOGGER = LoggerFactory.getLogger("RikixzLyric");
    private static Font font;
    private static final FontRenderContext FRC = new FontRenderContext(null, true, true);

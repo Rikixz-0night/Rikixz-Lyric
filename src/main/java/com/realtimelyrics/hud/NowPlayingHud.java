@@ -157,16 +157,29 @@ public final class NowPlayingHud implements HudElement {
       g.pose().pushMatrix();
       g.pose().translate((float)CONTENT_X, 24.0F);
       g.pose().scale(titleScale, titleScale);
-      g.text(font, Component.literal(titleClipped).withStyle(ChatFormatting.BOLD), 0, 0, 0xFFFFFFFF, true);
+      Component titleComp = Component.literal(titleClipped).withStyle(ChatFormatting.BOLD);
+      if (KhmerTextUtil.containsKhmer(rawTitle)) {
+         try { titleComp = titleComp.withStyle(KhmerTextUtil.khmerStyle()); } catch (Throwable ignored) {}
+      }
+      g.text(font, titleComp, 0, 0, 0xFFFFFFFF, true);
       g.pose().popMatrix();
 
       String subSongClipped = clipText(font, subSong, contentW);
-      g.text(font, subSongClipped, CONTENT_X, 40, 0xFFB4BCCF);
+      Component subComp = Component.literal(subSongClipped);
+      if (KhmerTextUtil.containsKhmer(rawArtist) || KhmerTextUtil.containsKhmer(rawAlbum)) {
+         try { subComp = subComp.withStyle(KhmerTextUtil.khmerStyle()); } catch (Throwable ignored) {}
+      }
+      g.text(font, subComp, CONTENT_X, 40, 0xFFB4BCCF);
 
       // Live karaoke line
       if (liveLyric != null && !liveLyric.isEmpty()) {
          g.text(font, "♪", CONTENT_X, 53, VisualTheme.ACCENT_MINT);
-         g.text(font, clipText(font, liveLyric, contentW - 10), CONTENT_X + 10, 53, 0xFFDDD7FF, true);
+         String liveClipped = clipText(font, liveLyric, contentW - 10);
+         Component liveComp = Component.literal(liveClipped);
+         if (KhmerTextUtil.containsKhmer(liveLyric)) {
+            try { liveComp = liveComp.withStyle(KhmerTextUtil.khmerStyle()); } catch (Throwable ignored) {}
+         }
+         g.text(font, liveComp, CONTENT_X + 10, 53, 0xFFDDD7FF, true);
       } else if (hasTrack) {
          String statusSub = "♫  " + formatTime(positionMs) + (durationMs > 0 ? " / " + formatTime(durationMs) : "");
          g.text(font, statusSub, CONTENT_X, 53, VisualTheme.TEXT_DARK);

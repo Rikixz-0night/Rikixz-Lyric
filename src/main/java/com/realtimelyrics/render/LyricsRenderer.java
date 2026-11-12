@@ -424,7 +424,9 @@ public final class LyricsRenderer {
       for (int i = 0; i < rawTokens.size(); i++) {
          String raw = rawTokens.get(i);
          String shaped = KhmerTextUtil.shape(raw);
-         FormattedCharSequence seq = Component.literal(shaped).getVisualOrderText();
+         FormattedCharSequence seq = KhmerTextUtil.containsKhmer(raw)
+            ? KhmerTextUtil.khmerComponent(shaped).getVisualOrderText()
+            : Component.literal(shaped).getVisualOrderText();
          words.add(new FloatingText.Word(i, seq, font.width(seq), 1.0F, -1));
          totalWeight += raw.length() + 2;
       }
@@ -464,7 +466,9 @@ public final class LyricsRenderer {
 
       for (String t : titleTokens) {
          String shaped = KhmerTextUtil.shape(t);
-         MutableComponent c = Component.literal(shaped).withStyle(ChatFormatting.BOLD);
+         MutableComponent c = KhmerTextUtil.containsKhmer(t)
+            ? KhmerTextUtil.khmerComponent(shaped).copy().withStyle(ChatFormatting.BOLD)
+            : Component.literal(shaped).copy().withStyle(ChatFormatting.BOLD);
          FormattedCharSequence seq = c.getVisualOrderText();
          FloatingText.Word w = new FloatingText.Word(i, seq, font.width(seq), 1.6F, -1);
          w.appearAt = i * 70L;
@@ -479,7 +483,9 @@ public final class LyricsRenderer {
 
          for (String t : KhmerTextUtil.tokenize(artist)) {
             String shaped = KhmerTextUtil.shape(t);
-            FormattedCharSequence seq = Component.literal(shaped).getVisualOrderText();
+            FormattedCharSequence seq = KhmerTextUtil.containsKhmer(t)
+               ? KhmerTextUtil.khmerComponent(shaped).getVisualOrderText()
+               : Component.literal(shaped).getVisualOrderText();
             FloatingText.Word w = new FloatingText.Word(i, seq, font.width(seq), 0.95F, 13224406);
             w.appearAt = titleCount * 70L + 150L + j * 60L;
             w.row = 1;
