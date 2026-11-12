@@ -56,11 +56,34 @@ public final class KhmerTextUtil {
    }
 
    public static synchronized String shape(String text) {
-      if (text == null || text.isEmpty() || !containsKhmer(text)) {
+      if (text == null || text.isEmpty() || font == null || !containsKhmer(text)) {
          return text;
       }
-      // Let Minecraft's FreeType font provider handle shaping via GSUB/GPOS.
-      return text;
+      Matcher m = KHMER_RUN.matcher(text);
+      StringBuilder sb = new StringBuilder(text.length() * 2);
+      int lastEnd = 0;
+      while (m.find()) {
+         sb.append(text, lastEnd, m.start());
+         String run = m.group();
+         try {
+            GlyphVector gv = font.layoutGlyphVector(FRC, run.toCharArray(), 0, run.length(), Font.LAYOUT_LEFT_TO_RIGHT);
+            int n = gv.getNumGlyphs();
+            for (int i = 0; i < n; i++) {
+               int code = gv.getGlyphCode(i);
+               if (code > 0 && code < 65536) {
+                  sb.append((char)code);
+               } else if (code > 0) {
+                  // Fallback to PUA mapping if needed
+                  sb.append((char)(0xE000 + (code & 0xFFFF)));
+               }
+            }
+         } catch (Exception e) {
+            sb.append(run);
+         }
+         lastEnd = m.end();
+      }
+      sb.append(text, lastEnd, text.length());
+      return sb.toString();
    }
 
    public static List<String> tokenize(String text) {
