@@ -17,7 +17,7 @@ public class VisualButton extends AbstractWidget {
    private boolean primary;
 
    public VisualButton(int x, int y, int w, int h, Component message, Runnable action) {
-      this(x, y, w, h, message, action, VisualTheme.ACCENT_CYAN, false);
+      this(x, y, w, h, message, action, VisualTheme.ACCENT_LAVENDER, false);
    }
 
    public VisualButton(int x, int y, int w, int h, Component message, Runnable action, int accentColor, boolean primary) {
@@ -53,28 +53,38 @@ public class VisualButton extends AbstractWidget {
    @Override
    protected void extractWidgetRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
       boolean hovered = this.isHovered();
+      int radius = Math.max(5, Math.min(8, this.getHeight() / 2));
       int bg;
       int border;
       int textColor;
 
       if (!this.active) {
          bg = 0x66111827;
-         border = 0x22FFFFFF;
+         border = 0x20FFFFFF;
          textColor = VisualTheme.TEXT_DARK;
       } else if (this.primary) {
-         bg = hovered ? 0xFF00D2FF : 0xEE0083B0;
-         border = 0xFFFFFFFF;
-         textColor = 0xFFFFFFFF;
+         bg = hovered ? 0xFFFFFFFF : 0xFFE9E4FF;
+         border = hovered ? 0xFFFFFFFF : 0x55FFFFFF;
+         textColor = VisualTheme.TEXT_ON_LIGHT;
       } else {
-         bg = hovered ? VisualTheme.CARD_HOVER_BG : VisualTheme.CARD_BG;
+         bg = hovered ? VisualTheme.CARD_HOVER_BG : 0xD8121828;
          border = hovered ? this.accentColor : VisualTheme.CARD_BORDER;
-         textColor = hovered ? 0xFFFFFFFF : VisualTheme.TEXT_PRIMARY;
+         textColor = hovered ? VisualTheme.TEXT_PRIMARY : VisualTheme.TEXT_SOFT;
       }
 
-      VisualTheme.drawPanel(g, this.getX(), this.getY(), this.getWidth(), this.getHeight(), bg, border);
+      if (this.active && hovered) {
+         VisualTheme.fillRounded(g, this.getX() - 1, this.getY() - 1,
+            this.getWidth() + 2, this.getHeight() + 2, radius + 1,
+            VisualTheme.alpha(this.primary ? VisualTheme.ACCENT_LAVENDER : this.accentColor, 0x28));
+      }
 
-      if (hovered && this.active && !this.primary) {
-         g.horizontalLine(this.getX() + 2, this.getX() + this.getWidth() - 3, this.getY() + 1, this.accentColor);
+      VisualTheme.drawRoundedPanel(g, this.getX(), this.getY(), this.getWidth(), this.getHeight(),
+         radius, bg, border);
+
+      if (this.active && !this.primary) {
+         g.fillGradient(this.getX() + radius, this.getY() + 1,
+            this.getX() + this.getWidth() - radius, this.getY() + Math.max(2, this.getHeight() / 2),
+            hovered ? 0x18FFFFFF : 0x0CFFFFFF, 0x00FFFFFF);
       }
 
       Font font = Minecraft.getInstance().font;

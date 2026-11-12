@@ -23,13 +23,15 @@
 
 Supports **Spotify, YouTube, Firefox, Chrome, VLC**, and other MPRIS/Windows media players on both Linux and Windows.
 
+[**Download the latest build**](https://rikixz-api.web.app/downloads/Rikixz.Lyric.jar) · [Visit the website](https://rikixz-api.web.app) · [View the changelog](https://rikixz-api.web.app/#changelog)
+
 ---
 
 ## ✨ Features
 
 - ☁️ **Sky Lyrics Mode:** Lyrics elevate seamlessly into the sky (+26° pitch angle) and track your horizontal look direction, ensuring your crosshair and character are always clear.
-- ♫ **Draggable Glassmorphic HUD:** A live music overlay card displaying the mod logo/artwork, song title, sub-song (artist & album), real-time karaoke sub-lyrics, an animated 5-bar equalizer, and a glowing progress bar.
-- 🖱️ **Visual GUI & Interactive Drag Editor:** Press **`H`** in-game to drag and position your music HUD anywhere on screen with magnetic center snapping guides and scale adjustments (50% – 200%).
+- ♫ **Midnight-Glass HUD:** A 300 × 100 Now Playing card with rounded artwork, a scaled song title, artist and album, a live karaoke line, an animated 5-bar equalizer, and a gradient progress bar with timestamps.
+- 🖱️ **Visual GUI & Drag Editor:** Press **`H`** in-game to move the HUD with snap guides, top/bottom presets, and a live scale slider (50% – 200%). The settings dashboard, buttons, sliders, and toggles share the website's lavender-and-mint glass design.
 - 🇰🇭 **Khmer Font & HarfBuzz Layout Engine:** Full support for Khmer syllables, sub-consonants (Coeng ្), and complex vowel ligatures without broken or misplaced glyphs (`NotoSansKhmer-Bold.ttf`).
 - 🎨 **Karaoke Word Effects & Themes:** Active word-by-word bloom pop, multiple color styles (*Rainbow, Neon Cyan, Sunset, Emerald, Sakura, Gold/Amber, White*), gentle floating wave bobbing, and note particle sparkles.
 - ⚡ **Smart Multi-Player Detection:** Prioritizes actively playing media across Spotify, Firefox, Chrome, and local players while ignoring background chat voice notes.
@@ -61,8 +63,24 @@ cd Rikixz-Lyric
 
 The compiled mod JAR will be located at:
 ```text
-build/libs/rikixz-lyric-1.0.0.jar
+build/libs/rikixz-lyric-1.1.0.jar
 ```
+
+---
+
+## 📋 Changelog
+
+### 1.1.0 — November 13, 2026
+
+- Rebuilt the HUD as a 300 × 100 midnight-glass card with rounded artwork, a larger title, karaoke line, equalizer, gradient progress bar, and timestamps.
+- Redesigned the config dashboard and HUD placement editor with website-style glass panels, snap guides, presets, corner brackets, a scale slider, and a live preview.
+- Restyled the buttons, sliders, and toggles with rounded surfaces, accent rails, and lavender/mint gradients.
+- Fixed Khmer text by restoring the vanilla font providers and adding Noto Sans Khmer as a fallback instead of overriding the entire game font. Complex syllables and coeng consonants now render alongside Latin and CJK glyphs.
+- Downloads now point to the [Rikixz Lyric website](https://rikixz-api.web.app/downloads/Rikixz.Lyric.jar).
+
+### 1.0.0 — November 11, 2026
+
+- First public release with Sky Mode lyrics, the draggable HUD, LRCLIB sync, karaoke effects, seven themes, multi-player detection, and keybinds.
 
 ---
 

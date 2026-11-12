@@ -1,0 +1,29 @@
+{
+  "providers": [
+    {
+      "type": "reference",
+      "id": "minecraft:include/space"
+    },
+    {
+      "type": "reference",
+      "id": "minecraft:include/default",
+      "filter": {
+        "uniform": false
+      }
+    },
+    {
+      "type": "ttf",
+      "file": "rikixz_lyric:NotoSansKhmer-Bold.ttf",
+      "shift": [
+        0.0,
+        0.0
+      ],
+      "size": 11.0,
+      "oversample": 2.0
+    },
+    {
+      "type": "reference",
+      "id": "minecraft:include/unifont"
+    }
+  ]
+}

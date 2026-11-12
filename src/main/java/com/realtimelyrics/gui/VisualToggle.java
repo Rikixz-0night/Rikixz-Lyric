@@ -53,49 +53,68 @@ public class VisualToggle extends AbstractWidget {
    @Override
    protected void extractWidgetRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
       boolean hovered = this.isHovered();
+      int x = this.getX();
+      int y = this.getY();
+      int w = this.getWidth();
+      int h = this.getHeight();
+      int radius = Math.max(5, Math.min(8, h / 2));
+
       int bg = hovered ? VisualTheme.CARD_HOVER_BG : VisualTheme.CARD_BG;
       int border = hovered ? VisualTheme.CARD_BORDER_HOVER : VisualTheme.CARD_BORDER;
 
-      VisualTheme.drawPanel(g, this.getX(), this.getY(), this.getWidth(), this.getHeight(), bg, border);
+      if (this.state) {
+         bg = hovered ? 0xF01B2035 : 0xE0161B2E;
+         border = hovered ? 0x88C4B5FD : 0x33C4B5FD;
+         VisualTheme.fillRounded(g, x - 1, y - 1, w + 2, h + 2, radius + 1, 0x18C4B5FD);
+      } else if (hovered) {
+         VisualTheme.fillRounded(g, x - 1, y - 1, w + 2, h + 2, radius + 1, 0x12FFFFFF);
+      }
+
+      VisualTheme.drawRoundedPanel(g, x, y, w, h, radius, bg, border);
+
+      // The active card gets a slim accent rail, echoing the website's highlight bars.
+      if (this.state) {
+         g.fill(x + 1, y + radius, x + 3, y + h - radius, VisualTheme.ACCENT_LAVENDER);
+         g.fill(x + 3, y + radius, x + 4, y + h - radius, VisualTheme.ACCENT_MINT);
+      }
 
       Font font = Minecraft.getInstance().font;
-      int textX = this.getX() + 8;
-      int textY = this.getY() + 3;
+      int textX = x + (this.state ? 10 : 8);
+      boolean hasDesc = this.description != null && !this.description.isEmpty();
+      int titleY = hasDesc && h >= 20 ? y + 3 : y + (h - 8) / 2;
 
-      g.text(font, this.title, textX, textY, VisualTheme.TEXT_PRIMARY);
+      int switchW = Math.max(26, Math.min(34, w / 5));
+      int switchH = 14;
+      int switchX = x + w - switchW - 8;
+      int switchY = y + (h - switchH) / 2;
+      int textMaxW = switchX - textX - 8;
 
-      if (this.description != null && !this.description.isEmpty()) {
-         String sub = this.description;
-         int maxW = this.getWidth() - 56;
-         if (font.width(sub) > maxW) {
-            sub = font.plainSubstrByWidth(sub, maxW - 6) + "...";
-         }
-         g.text(font, sub, textX, textY + 11, VisualTheme.TEXT_MUTED);
+      g.text(font, VisualTheme.clip(font, this.title, textMaxW), textX, titleY,
+         this.state ? VisualTheme.TEXT_PRIMARY : VisualTheme.TEXT_SOFT);
+
+      if (hasDesc && h >= 20) {
+         String desc = VisualTheme.clip(font, this.description, textMaxW);
+         g.text(font, desc, textX, y + 12, VisualTheme.TEXT_MUTED);
       }
 
-      // Modern Pill switch on the right
-      int pillW = 34;
-      int pillH = 16;
-      int pillX = this.getX() + this.getWidth() - pillW - 8;
-      int pillY = this.getY() + (this.getHeight() - pillH) / 2;
+      // Soft glass switch with a gradient "on" rail and a round knob.
+      int trackBg = this.state ? 0xFF8B7CF6 : 0x66334155;
+      VisualTheme.drawRoundedPanel(g, switchX, switchY, switchW, switchH, switchH / 2,
+         trackBg, this.state ? 0x99C4B5FD : 0x33FFFFFF);
 
-      int pillBg = this.state ? 0xFF00C9FF : 0x66334155;
-      int pillBorder = this.state ? 0xFF4FACFE : 0x4464748B;
-      VisualTheme.drawPanel(g, pillX, pillY, pillW, pillH, pillBg, pillBorder);
-
-      // Pill Knob
-      int knobSize = 12;
-      int knobY = pillY + 2;
-      int knobX = this.state ? (pillX + pillW - knobSize - 2) : (pillX + 2);
-      int knobColor = this.state ? 0xFFFFFFFF : 0xFF94A3B8;
-      VisualTheme.drawPanel(g, knobX, knobY, knobSize, knobSize, knobColor, 0);
-
-      // Status text
       if (this.state) {
-         g.text(font, "ON", pillX + 4, pillY + 4, 0xFF003049);
-      } else {
-         g.text(font, "OFF", pillX + 14, pillY + 4, 0xFF64748B);
+         VisualTheme.drawHorizontalGradient(g, switchX + 2, switchY + 1, switchW - 4, switchH - 2,
+            VisualTheme.ACCENT_VIOLET, VisualTheme.ACCENT_MINT);
+         VisualTheme.fillRounded(g, switchX - 1, switchY - 1, switchW + 2, switchH + 2, switchH / 2 + 1,
+            0x28C4B5FD);
       }
+
+      int knobSize = switchH - 4;
+      int knobX = this.state ? switchX + switchW - knobSize - 2 : switchX + 2;
+      int knobY = switchY + 2;
+      VisualTheme.fillCircle(g, knobX + knobSize / 2, knobY + knobSize / 2, knobSize / 2 + 1, 0x44000000);
+      VisualTheme.drawRoundedPanel(g, knobX, knobY, knobSize, knobSize, knobSize / 2,
+         this.state ? 0xFFFFFFFF : 0xFFB8C0D4, this.state ? 0xFFFFFFFF : 0x22FFFFFF);
    }
 
    @Override

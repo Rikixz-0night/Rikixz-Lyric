@@ -2,9 +2,9 @@ package com.realtimelyrics.hud;
 
 import com.realtimelyrics.LyricsConfig;
 import com.realtimelyrics.LyricsController;
+import com.realtimelyrics.gui.VisualTheme;
 import com.realtimelyrics.lyrics.Lyrics;
 import com.realtimelyrics.media.MediaSample;
-import com.realtimelyrics.render.Anim;
 import com.realtimelyrics.render.KhmerTextUtil;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -19,8 +19,11 @@ import net.minecraft.resources.Identifier;
 
 @Environment(EnvType.CLIENT)
 public final class NowPlayingHud implements HudElement {
-   public static final int WIDTH = 256;
-   public static final int HEIGHT = 54;
+   public static final int WIDTH = 300;
+   public static final int HEIGHT = 100;
+   private static final int RADIUS = 14;
+   private static final int CONTENT_X = 94;
+   private static final int ART_SIZE = 68;
    private static final Identifier LOGO_TEXTURE = Identifier.fromNamespaceAndPath("rikixz_lyric", "textures/gui/logo.png");
 
    private final LyricsConfig config;
@@ -66,159 +69,163 @@ public final class NowPlayingHud implements HudElement {
       MediaSample media = this.controller.currentMedia();
       boolean hasTrack = media != null && media.hasTrack();
 
-      String rawTitle = hasTrack ? this.controller.displayTitle() : (isPreview ? "Girl In My Dream 2" : "No Media Playing");
-      String rawArtist = hasTrack ? this.controller.displayArtist() : (isPreview ? "1NE" : "Play music in Spotify / Browser");
-      String rawAlbum = hasTrack && media.album() != null ? media.album() : (isPreview ? "Ambition" : "");
-      long durationMs = hasTrack ? media.durationMs() : (isPreview ? 223000L : 0L);
-      long positionMs = hasTrack ? this.controller.songPositionMs() : (isPreview ? 98000L : 0L);
+      String rawTitle = hasTrack ? this.controller.displayTitle() : (isPreview ? "Midnight Drive" : "Nothing playing");
+      String rawArtist = hasTrack ? this.controller.displayArtist() : (isPreview ? "Rikixz · Neon Skyline" : "Open Spotify, YouTube, or another player");
+      String rawAlbum = hasTrack && media.album() != null ? media.album() : (isPreview ? "Neon Skyline" : "");
+      long durationMs = hasTrack ? media.durationMs() : (isPreview ? 228000L : 0L);
+      long positionMs = hasTrack ? this.controller.songPositionMs() : (isPreview ? 84000L : 0L);
       boolean isPlaying = hasTrack ? this.controller.isPlaying() : isPreview;
-      String app = hasTrack && media.app() != null && !media.app().isBlank() ? media.app().toUpperCase() : (isPreview ? "FIREFOX" : "");
+      String app = hasTrack && media.app() != null && !media.app().isBlank()
+         ? media.app().toUpperCase()
+         : (isPreview ? "SPOTIFY" : "");
 
       String title = KhmerTextUtil.shape(rawTitle);
       String artist = KhmerTextUtil.shape(rawArtist);
 
-      // Sub song: artist + album / subtitle
       String subSongText = artist;
       if (!rawAlbum.isBlank() && !rawAlbum.equalsIgnoreCase(rawTitle)) {
          subSongText = artist + " · " + rawAlbum;
       }
       String subSong = KhmerTextUtil.shape(subSongText);
 
-      // Live sub-lyric (karaoke subtitle) line
       String liveLyric = null;
       Lyrics lyrics = this.controller.lyrics();
       if (lyrics != null && !lyrics.lines().isEmpty()) {
          int idx = lyrics.indexAt(positionMs);
          if (idx >= 0 && idx < lyrics.lines().size()) {
-            String lText = lyrics.lines().get(idx).text();
-            if (lText != null && !lText.isBlank()) {
-               liveLyric = KhmerTextUtil.shape(lText.trim());
+            String line = lyrics.lines().get(idx).text();
+            if (line != null && !line.isBlank()) {
+               liveLyric = KhmerTextUtil.shape(line.trim());
             }
          }
       } else if (isPreview) {
-         liveLyric = KhmerTextUtil.shape("ស្រឡាញ់អូនដល់ចាស់ ♪");
+         liveLyric = "We're running through the neon night";
       }
+
+      int accent = hasTrack ? (isPlaying ? VisualTheme.ACCENT_LAVENDER : VisualTheme.ACCENT_AMBER) : VisualTheme.ACCENT_LAVENDER;
+      int borderColor = isDragging
+         ? 0xCCF5D9A8
+         : (hasTrack ? (isPlaying ? 0x55C4B5FD : 0x44F5D9A8) : 0x24FFFFFF);
+      float time = (System.currentTimeMillis() % 100000L) / 1000.0F;
 
       g.pose().pushMatrix();
       g.pose().translate((float)x, (float)y);
       g.pose().scale(scale, scale);
 
-      // Outer drop shadow glow
-      g.fill(-2, -2, WIDTH + 2, HEIGHT + 2, isDragging ? 0x6000F2FE : 0x25000000);
+      // Ambient halo and soft drop shadow
+      VisualTheme.fillRounded(g, -4, -4, WIDTH + 8, HEIGHT + 8, RADIUS + 4,
+         VisualTheme.alpha(accent, isDragging ? 0x1E : 0x0E));
+      VisualTheme.fillRounded(g, -2, -2, WIDTH + 4, HEIGHT + 4, RADIUS + 2,
+         VisualTheme.alpha(accent, isDragging ? 0x2E : 0x16));
+      VisualTheme.fillRounded(g, 1, 3, WIDTH, HEIGHT, RADIUS, 0x30000000);
 
-      // Rounded dark glass card body
-      g.fill(2, 0, WIDTH - 2, HEIGHT, 0xEE0D0F18);
-      g.fill(0, 2, WIDTH, HEIGHT - 2, 0xEE0D0F18);
-      g.fill(1, 1, WIDTH - 1, HEIGHT - 1, 0xEE0D0F18);
+      // Glass card body
+      VisualTheme.drawRoundedPanel(g, 0, 0, WIDTH, HEIGHT, RADIUS, 0xF00B1020, borderColor);
+      g.fillGradient(1 + RADIUS, 1, WIDTH - RADIUS - 1, 44, 0x18FFFFFF, 0x00FFFFFF);
+      g.fill(1 + RADIUS, 1, WIDTH - RADIUS - 1, 2, 0x0CFFFFFF);
+      VisualTheme.drawHorizontalGradient(g, RADIUS + 2, 1, WIDTH - RADIUS * 2 - 4, 1, 0x99C4B5FD, 0x9999F6E4);
 
-      // Card border
-      int borderColor = isDragging ? 0xFFFFD700 : (hasTrack && isPlaying ? 0x5500F2FE : 0x22FFFFFF);
-      g.outline(0, 0, WIDTH, HEIGHT, borderColor);
+      // Album artwork, with a soft rounded frame
+      int artX = 12;
+      int artY = 13;
+      VisualTheme.fillRounded(g, artX - 2, artY - 1, ART_SIZE + 4, ART_SIZE + 4, 13, 0x28000000);
+      VisualTheme.drawRoundedPanel(g, artX - 1, artY - 1, ART_SIZE + 2, ART_SIZE + 2, 11, 0xFF0A0F1B, 0x33FFFFFF);
 
-      // Animated neon gradient stripe on top
-      long millis = System.currentTimeMillis();
-      float hue1 = (millis % 7000L) / 7000.0f;
-      float hue2 = (hue1 + 0.32f) % 1.0f;
-      int c1 = 0xFF000000 | Anim.hsv(hue1, 0.85f, 1.0f);
-      int c2 = 0xFF000000 | Anim.hsv(hue2, 0.85f, 1.0f);
-      g.fillGradient(2, 0, WIDTH - 2, 2, c1, c2);
-
-      // Left Logo / Album Artwork Box (size: 42x42)
-      int logoX = 6;
-      int logoY = 6;
-      int logoSize = 42;
-
-      // Dark artwork panel backing & border
-      g.fill(logoX, logoY, logoX + logoSize, logoY + logoSize, 0x66000000);
-      g.outline(logoX, logoY, logoSize, logoSize, 0x444FACFE);
-
-      // Render the mod's official logo image!
       try {
-         g.blit(LOGO_TEXTURE, logoX, logoY, logoX + logoSize, logoY + logoSize, 0.0F, 1.0F, 0.0F, 1.0F);
+         g.blit(LOGO_TEXTURE, artX, artY, artX + ART_SIZE, artY + ART_SIZE, 0.0F, 1.0F, 0.0F, 1.0F);
       } catch (Throwable ignored) {
-         // Fallback if texture is loading
-         g.fill(logoX + 1, logoY + 1, logoX + logoSize - 1, logoY + logoSize - 1, 0xFF1E293B);
+         g.fill(artX, artY, artX + ART_SIZE, artY + ART_SIZE, 0xFF111827);
       }
+      maskRoundedCorners(g, artX, artY, ART_SIZE, ART_SIZE, 9, 0xFF0A0F1B);
 
-      // Mini Equalizer badge in bottom-right corner of the logo
-      if (isPlaying) {
-         int eqW = 16;
-         int eqH = 10;
-         int eqX = logoX + logoSize - eqW;
-         int eqY = logoY + logoSize - eqH;
-         g.fill(eqX, eqY, eqX + eqW, eqY + eqH, 0xB0000000);
+      int contentW = WIDTH - CONTENT_X - 13;
+      String status = hasTrack ? (isPlaying ? "NOW PLAYING" : "PAUSED") : "PLAYER STANDBY";
+      String meta = status + (app.isBlank() ? "" : "  ·  " + app);
+      int metaColor = hasTrack ? (isPlaying ? VisualTheme.ACCENT_MINT : VisualTheme.ACCENT_AMBER) : VisualTheme.TEXT_DARK;
 
-         float t = (millis % 60000L) / 1000.0f;
-         for (int b = 0; b < 3; b++) {
-            float wave = (float)(Math.sin(t * 8.0f + b * 1.5f) * 0.5f + 0.5f);
-            int barH = Math.max(2, (int)(8 * wave));
-            int barX = eqX + 2 + b * 5;
-            int barY = eqY + eqH - barH - 1;
-            g.fill(barX, barY, barX + 3, eqY + eqH - 1, 0xFF00E676);
-         }
-      }
+      VisualTheme.drawStatusDot(g, CONTENT_X, 17, metaColor, hasTrack && isPlaying, time);
+      g.text(font, clipText(font, meta, contentW - 34), CONTENT_X + 7, 14, metaColor);
 
-      // App Source Badge Pill (e.g. SPOTIFY, FIREFOX)
-      if (!app.isEmpty()) {
-         int tagW = font.width(app) + 8;
-         int tagX = WIDTH - tagW - 6;
-         g.fill(tagX, 6, tagX + tagW, 16, 0x401DB954);
-         g.outline(tagX, 6, tagW, 10, 0x601DB954);
-         g.text(font, Component.literal(app).withStyle(ChatFormatting.GREEN), tagX + 4, 7, 0xFF1DB954);
-      }
+      VisualTheme.drawEqualizer(
+         g, WIDTH - 13 - 24, 13, 24, 9, time,
+         VisualTheme.ACCENT_LAVENDER, VisualTheme.ACCENT_MINT, hasTrack && isPlaying
+      );
 
-      int textX = 54;
-      int maxTitleW = app.isEmpty() ? (WIDTH - textX - 8) : (WIDTH - textX - font.width(app) - 18);
+      // Song title, drawn slightly larger to create a clear hierarchy
+      float titleScale = 1.2F;
+      String titleClipped = clipText(font, title, (int)(contentW / titleScale));
+      g.pose().pushMatrix();
+      g.pose().translate((float)CONTENT_X, 24.0F);
+      g.pose().scale(titleScale, titleScale);
+      g.text(font, Component.literal(titleClipped).withStyle(ChatFormatting.BOLD), 0, 0, 0xFFFFFFFF, true);
+      g.pose().popMatrix();
 
-      // Line 1: Main Title
-      String titleClipped = clipText(font, title, maxTitleW);
-      g.text(font, Component.literal(titleClipped).withStyle(ChatFormatting.BOLD), textX, 6, 0xFFFFFFFF);
+      String subSongClipped = clipText(font, subSong, contentW);
+      g.text(font, subSongClipped, CONTENT_X, 40, 0xFFB4BCCF);
 
-      // Line 2: Sub song (Artist • Album / Subtitle)
-      String subSongClipped = clipText(font, subSong, WIDTH - textX - 8);
-      g.text(font, Component.literal(subSongClipped), textX, 17, 0xFFB4BACD);
-
-      // Line 3: Live Sub-Lyric (Real-time karaoke subtitles)
+      // Live karaoke line
       if (liveLyric != null && !liveLyric.isEmpty()) {
-         String lyricClipped = clipText(font, "♪ " + liveLyric, WIDTH - textX - 8);
-         g.text(font, Component.literal(lyricClipped), textX, 28, 0xFFFFD700);
+         g.text(font, "♪", CONTENT_X, 53, VisualTheme.ACCENT_MINT);
+         g.text(font, clipText(font, liveLyric, contentW - 10), CONTENT_X + 10, 53, 0xFFDDD7FF, true);
       } else if (hasTrack) {
-         String statusSub = "♫ " + formatTime(positionMs) + (durationMs > 0 ? " / " + formatTime(durationMs) : "");
-         g.text(font, Component.literal(statusSub), textX, 28, 0xFF64748B);
+         String statusSub = "♫  " + formatTime(positionMs) + (durationMs > 0 ? " / " + formatTime(durationMs) : "");
+         g.text(font, statusSub, CONTENT_X, 53, VisualTheme.TEXT_DARK);
       } else {
-         g.text(font, Component.literal("♪ Music player ready"), textX, 28, 0xFF64748B);
+         g.text(font, "♪  Your lyrics will appear here", CONTENT_X, 53, VisualTheme.TEXT_DARK);
       }
 
-      // Line 4: Progress bar track
-      int barY = 43;
-      int barEnd = WIDTH - 48;
-      g.fill(textX, barY, barEnd, barY + 3, 0x35FFFFFF);
+      // Progress rail
+      int barY = 74;
+      int barH = 4;
+      VisualTheme.fillRounded(g, CONTENT_X, barY, contentW, barH, 2, 0x2EFFFFFF);
 
-      // Progress bar fill & knob
       if (durationMs > 0) {
-         float progress = Math.max(0.0f, Math.min(1.0f, (float)positionMs / (float)durationMs));
-         int fillW = (int)((barEnd - textX) * progress);
+         float progress = Math.max(0.0F, Math.min(1.0F, (float)positionMs / (float)durationMs));
+         int fillW = (int)(contentW * progress);
          if (fillW > 0) {
-            g.fillGradient(textX, barY, textX + fillW, barY + 3, c1, c2);
-            // Glowing knob head
-            int knobX = textX + fillW;
-            g.fill(knobX - 1, barY - 1, knobX + 2, barY + 4, 0xFFFFFFFF);
+            VisualTheme.fillRounded(g, CONTENT_X - 1, barY - 1, fillW + 2, barH + 2, 3, 0x18C4B5FD);
+            VisualTheme.drawHorizontalGradient(g, CONTENT_X, barY, Math.max(2, fillW), barH,
+               VisualTheme.ACCENT_LAVENDER, VisualTheme.ACCENT_MINT);
          }
-      }
 
-      // Time stamp on bottom right
-      String timeText = formatTime(positionMs);
-      if (durationMs > 0) {
-         timeText = timeText + " / " + formatTime(durationMs);
+         g.text(font, formatTime(positionMs), CONTENT_X, 82, VisualTheme.TEXT_DARK);
+         String total = formatTime(durationMs);
+         g.text(font, total, CONTENT_X + contentW - font.width(total), 82, VisualTheme.TEXT_DARK);
+      } else if (isPreview) {
+         VisualTheme.drawHorizontalGradient(g, CONTENT_X, barY, (int)(contentW * 0.37F), barH,
+            VisualTheme.ACCENT_LAVENDER, VisualTheme.ACCENT_MINT);
+         g.text(font, "01:24", CONTENT_X, 82, VisualTheme.TEXT_DARK);
+         String total = "03:48";
+         g.text(font, total, CONTENT_X + contentW - font.width(total), 82, VisualTheme.TEXT_DARK);
       }
-      g.text(font, Component.literal(timeText), WIDTH - 46, 39, 0xFF8E95AA);
 
       g.pose().popMatrix();
    }
 
+   private static void maskRoundedCorners(
+      GuiGraphicsExtractor g, int x, int y, int w, int h, int radius, int color
+   ) {
+      for (int i = 0; i < radius; i++) {
+         int dy = radius - 1 - i;
+         int inset = radius - (int)Math.sqrt((double)(radius * radius - dy * dy));
+         if (inset <= 0) {
+            continue;
+         }
+         g.fill(x, y + i, x + inset, y + i + 1, color);
+         g.fill(x + w - inset, y + i, x + w, y + i + 1, color);
+         g.fill(x, y + h - 1 - i, x + inset, y + h - i, color);
+         g.fill(x + w - inset, y + h - 1 - i, x + w, y + h - i, color);
+      }
+   }
+
    private static String clipText(Font font, String text, int maxWidth) {
-      if (text == null || text.isEmpty()) return "";
-      if (font.width(text) <= maxWidth) return text;
+      if (text == null || text.isEmpty()) {
+         return "";
+      }
+      if (font.width(text) <= maxWidth) {
+         return text;
+      }
+
       String dots = "...";
       int dotsW = font.width(dots);
       int len = text.length();
@@ -232,6 +239,6 @@ public final class NowPlayingHud implements HudElement {
       long totalSec = Math.max(0L, ms / 1000L);
       long min = totalSec / 60L;
       long sec = totalSec % 60L;
-      return String.format("%02d:%02d", min, sec);
+      return String.format("%d:%02d", min, sec);
    }
 }

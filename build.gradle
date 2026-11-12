@@ -23,6 +23,7 @@ dependencies {
 
 	compileOnly "net.fabricmc:fabric-loader:${project.loader_version}"
 	compileOnly "net.fabricmc:sponge-mixin:0.17.5+mixin.0.8.7"
+	runtimeOnly "net.fabricmc:fabric-loader:${project.loader_version}"
 
 	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 }
