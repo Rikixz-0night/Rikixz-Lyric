@@ -9,32 +9,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Style;
-import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public final class KhmerTextUtil {
-   public static final Identifier KHMER_FONT = Identifier.fromNamespaceAndPath("rikixz_lyric", "khmer");
-   public static Style khmerStyle() {
-      try {
-         return Style.EMPTY.withFont(KHMER_FONT);
-      } catch (Throwable t) {
-         return Style.EMPTY;
-      }
-   }
-   public static Component khmerComponent(String text) {
-      if (text == null) return Component.empty();
-      String shaped = shape(text);
-      Component c = Component.literal(shaped);
-      if (containsKhmer(text)) {
-         try {
-            c = c.withStyle(khmerStyle());
-         } catch (Throwable ignored) {}
-      }
-      return c;
-   }
    private static final Logger LOGGER = LoggerFactory.getLogger("RikixzLyric");
    private static Font font;
    private static final FontRenderContext FRC = new FontRenderContext(null, true, true);
@@ -78,21 +56,43 @@ public final class KhmerTextUtil {
    }
 
    public static synchronized String shape(String text) {
-      if (text == null || text.isEmpty() || !containsKhmer(text)) {
+      if (text == null || text.isEmpty() || font == null || !containsKhmer(text)) {
          return text;
       }
-      try {
-         // Try ICU4J normalization first
-         String normalized = com.ibm.icu.text.Normalizer2.getNFCInstance().normalize(text);
-         return normalized;
-      } catch (Throwable t) {
+      Matcher m = KHMER_RUN.matcher(text);
+      StringBuilder sb = new StringBuilder(text.length() * 2);
+      int lastEnd = 0;
+      while (m.find()) {
+         sb.append(text, lastEnd, m.start());
+         String run = m.group();
          try {
-            java.text.Normalizer.Form form = java.text.Normalizer.Form.NFC;
-            return java.text.Normalizer.isNormalized(text, form) ? text : java.text.Normalizer.normalize(text, form);
-         } catch (Throwable t2) {
-            return text;
+            String normalized = com.ibm.icu.text.Normalizer2.getNFCInstance().normalize(run);
+            GlyphVector gv = font.layoutGlyphVector(FRC, normalized.toCharArray(), 0, normalized.length(), Font.LAYOUT_LEFT_TO_RIGHT);
+            int n = gv.getNumGlyphs();
+            for (int i = 0; i < n; i++) {
+               int code = gv.getGlyphCode(i);
+               if (code > 0) {
+                  sb.append((char)(0xE000 + (code & 0xFFFF)));
+               }
+            }
+         } catch (Throwable t) {
+            try {
+               GlyphVector gv = font.layoutGlyphVector(FRC, run.toCharArray(), 0, run.length(), Font.LAYOUT_LEFT_TO_RIGHT);
+               int n = gv.getNumGlyphs();
+               for (int i = 0; i < n; i++) {
+                  int code = gv.getGlyphCode(i);
+                  if (code > 0) {
+                     sb.append((char)(0xE000 + (code & 0xFFFF)));
+                  }
+               }
+            } catch (Exception e) {
+               sb.append(run);
+            }
          }
+         lastEnd = m.end();
       }
+      sb.append(text, lastEnd, text.length());
+      return sb.toString();
    }
 
    public static List<String> tokenize(String text) {
